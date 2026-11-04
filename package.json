@@ -14,6 +14,14 @@
   "bin": {
     "pi-scrapling": "./scripts/cli.mjs"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/jordilopez/pi-scrapling.git"
+  },
+  "homepage": "https://github.com/jordilopez/pi-scrapling#readme",
+  "bugs": {
+    "url": "https://github.com/jordilopez/pi-scrapling/issues"
+  },
   "pi": {
     "extensions": ["./extensions/scrapling.ts"],
     "skills": ["./skills"]
