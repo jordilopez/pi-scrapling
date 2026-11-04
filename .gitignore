@@ -1,0 +1,22 @@
+node_modules/
+*.log
+.DS_Store
+.env
+.env.*
+
+# Python venv created during scrapling setup (do not commit user venv)
+.venv/
+__pycache__/
+*.pyc
+
+# Scrapling session/browser state
+.scrapling/
+*.scrapling_state.json
+
+# Local skill copies installed into this project folder by hand
+# (the canonical user-level install is in ~/.pi/agent/skills/)
+.skills-local/
+
+# Pi runtime state written into the package dir on `pi install`
+# (Herdr/agent runs, mcp.json overlay, agent-skills ownership manifest)
+.pi/

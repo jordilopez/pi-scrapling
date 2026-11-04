@@ -1,0 +1,44 @@
+{
+  "name": "pi-scrapling",
+  "version": "1.0.0",
+  "description": "Pi Agent integration for Scrapling: bundles the upstream scrapling-official agent skill and registers the Scrapling MCP server (16 scraping/browser tools) via an extension, so Pi can scrape, crawl, and adaptively parse sites out of the box. Provides a `pi-scrapling` CLI for one-step install/update/remove.",
+  "type": "module",
+  "keywords": [
+    "pi-package",
+    "scrapling",
+    "web-scraping",
+    "agent-skill",
+    "mcp",
+    "cli"
+  ],
+  "bin": {
+    "pi-scrapling": "./scripts/cli.mjs"
+  },
+  "pi": {
+    "extensions": ["./extensions/scrapling.ts"],
+    "skills": ["./skills"]
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "extensions/",
+    "skills/",
+    "scripts/",
+    "README.md",
+    "package.json"
+  ],
+  "scripts": {
+    "validate": "node ./scripts/validate.mjs",
+    "setup": "node ./scripts/cli.mjs install",
+    "setup:no-browser": "node ./scripts/cli.mjs install --skip-browser",
+    "setup:update": "node ./scripts/cli.mjs update",
+    "setup:remove": "node ./scripts/cli.mjs remove",
+    "setup:purge": "node ./scripts/cli.mjs remove --purge-venv --yes",
+    "setup:doctor": "node ./scripts/cli.mjs doctor",
+    "dev:prune-mcp": "node ./scripts/dev-prune-mcp.mjs"
+  }
+}
