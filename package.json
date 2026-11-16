@@ -41,6 +41,7 @@
   ],
   "scripts": {
     "validate": "node ./scripts/validate.mjs",
+    "test": "node --test test/*.test.mjs",
     "setup": "node ./scripts/cli.mjs install",
     "setup:no-browser": "node ./scripts/cli.mjs install --skip-browser",
     "setup:update": "node ./scripts/cli.mjs update",

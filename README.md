@@ -28,11 +28,13 @@ What it does:
 3. downloads the Playwright browser cache (`scrapling install --force`, a few hundred MB)
 4. runs `pi install` against this package so Pi discovers the skill + extension
 
-`update`, `remove`, and `doctor` round out the lifecycle:
+`update`, `remove`, and `doctor` round out the lifecycle. For Herdr and other automation, the CLI also exposes the shared venv without requiring a project-local activation:
 
 ```bash
 pi-scrapling update               # pip upgrade + browser refresh + pi reconcile
 pi-scrapling doctor               # prints status of every component
+pi-scrapling path -- python        # stable absolute path for child processes
+pi-scrapling exec -- python job.py # run with the shared venv on PATH
 pi-scrapling remove               # pi uninstall; venv kept
 pi-scrapling remove --purge-venv  # also delete the venv after prompting
 ```
@@ -47,6 +49,14 @@ Flags (apply where relevant):
 | `--purge-venv` | on `remove`, also delete the venv (prompts unless `--yes`) |
 | `--reconcile-user-mcp` | opt-in: rewrite `~/.pi/agent/mcp.json`, removing any one-key `{command: "scrapling-mcp"}` stale entry with a timestamped `<path>.bak.<UTC>` snapshot. Configured entries with extra fields are NOT touched. Default: skip. |
 | `--yes, -y` | answer yes to prompts |
+
+`path` is intentionally machine-friendly and supports `python`, `pip`, `scrapling`, and
+`scrapling-mcp` (the default is `python`). `exec -- ...` starts the command with
+`VIRTUAL_ENV` and the shared venv's bin directory in `PATH`; it does not activate a
+shell or create another venv. Run `install` or `update` first so Scrapling and its
+browsers are provisioned through the normal lifecycle. Herdr child processes can
+ discover the integration with `pi-scrapling path -- scrapling` (or invoke
+`pi-scrapling exec -- python ...`) from any project directory.
 
 ### npm-script shortcuts
 
@@ -74,12 +84,22 @@ pi install /absolute/path/to/pi-scrapling
 
 If you'd rather run Scrapling from Docker, the upstream docs cover [`pyd4vinci/scrapling`](https://hub.docker.com/r/pyd4vinci/scrapling) — point the MCP `command` at your docker wrapper via the `SCRAPLING_MCP_COMMAND` env var or a `mcp.json` override.
 
-### Verify
+### MCP versus CLI process isolation
+
+MCP and CLI use the same `~/.venvs/scrapling`, but they are separate processes:
+Pi starts `scrapling-mcp` for MCP tool calls, while Herdr jobs should invoke the
+CLI's `path` or `exec` command. MCP configuration is not inherited by arbitrary
+child processes, and child-process `PATH` is not a substitute for Pi's MCP
+registration. This is why automation should use the explicit CLI contract above
+rather than assuming the MCP server is available as a shell command.
+
+## Verify
 
 ```bash
 pi list                # pi-scrapling is listed
 pi mcp list            # scrapling: connected, ~16 tools
 pi-scrapling doctor    # one-shot status check across Python, venv, browser, Pi
+pi-scrapling path -- scrapling-mcp  # verify the child-process MCP entry point
 ```
 
 Start a fresh Pi session — extensions load at startup, so a running session won't see new state. `/reload` works for the extension; fresh start is the reliable check.
