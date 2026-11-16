@@ -72,6 +72,39 @@ scrapling install --force
 pi install /absolute/path/to/pi-scrapling
 ```
 
+### Use the Scrapling CLI directly
+
+The setup creates the Scrapling commands inside the shared virtual environment.
+For interactive use, activate it before running `scrapling` or `scrapling-mcp`:
+
+```bash
+# macOS/Linux
+source ~/.venvs/scrapling/bin/activate
+scrapling --help
+
+# Windows PowerShell
+~\\venvs\\scrapling\\Scripts\\Activate.ps1
+scrapling --help
+```
+
+To make the commands available without activation, add the venv's bin directory
+to your shell PATH. On macOS/Linux:
+
+```bash
+export PATH="$HOME/.venvs/scrapling/bin:$PATH"
+```
+
+For persistent PATH configuration, add that line to your shell profile (for
+example `~/.zshrc` or `~/.bashrc`). Automation that does not load a shell
+profile should invoke the executable by its absolute path instead:
+
+```bash
+$HOME/.venvs/scrapling/bin/scrapling --help
+$HOME/.venvs/scrapling/bin/scrapling-mcp
+```
+
+On Windows, add `%USERPROFILE%\\venvs\\scrapling\\Scripts` to your user PATH.
+
 If you'd rather run Scrapling from Docker, the upstream docs cover [`pyd4vinci/scrapling`](https://hub.docker.com/r/pyd4vinci/scrapling) — point the MCP `command` at your docker wrapper via the `SCRAPLING_MCP_COMMAND` env var or a `mcp.json` override.
 
 ### Verify
