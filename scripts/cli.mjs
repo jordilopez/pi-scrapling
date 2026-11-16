@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // pi-scrapling setup CLI.
 //
-// Subcommands: install | update | remove | doctor | path | exec
+// Subcommands: install | update | remove | doctor
 //
 // Flags (full list lives in this file's `usage()` block, surfaced by --help):
 //   Subcommand-agnostic:        --source, --venv-dir, --yes, -h, --help
@@ -56,7 +56,6 @@ function parseArgs(argv) {
 		yes: false,
 	};
 	const positional = [];
-	let passthrough = false;
 	let i;
 	const value = (flag) => {
 		const v = argv[++i];
@@ -65,8 +64,6 @@ function parseArgs(argv) {
 	};
 	for (i = 0; i < argv.length; i++) {
 		const a = argv[i];
-		if (passthrough) { positional.push(a); continue; }
-		if (a === "--") { passthrough = true; continue; }
 		if (a === "-h" || a === "--help") args.help = true;
 		else if (a === "--purge-venv") args.purgeVenv = true;
 		else if (a === "--skip-browser") args.skipBrowser = true;
@@ -79,7 +76,6 @@ function parseArgs(argv) {
 		} else positional.push(a);
 	}
 	if (positional.length) args.command = positional[0];
-	args.passthrough = positional.slice(1);
 	return args;
 }
 
@@ -470,26 +466,6 @@ async function remove(args) {
 	console.log(ok(`remove complete`));
 }
 
-async function pathCommand(args) {
-	const venvDir = resolveVenvDir(args);
-	const name = args.passthrough[0] || "python";
-	const allowed = new Set(["python", "pip", "scrapling", "scrapling-mcp"]);
-	if (!allowed.has(name)) fail(`Unknown venv executable: ${name}`);
-	const executable = venvBin(name, venvDir);
-	if (!existsSync(executable)) fail(`Venv executable not found: ${executable}. Run \`pi-scrapling install\` first.`);
-	console.log(executable);
-}
-
-async function execCommand(args) {
-	const venvDir = resolveVenvDir(args);
-	if (!existsSync(venvPython(venvDir))) fail(`Venv not found at ${venvDir}. Run \`pi-scrapling install\` first.`);
-	const command = args.passthrough[0];
-	if (!command) fail("exec requires a command after --, for example: pi-scrapling exec -- python script.py");
-	const binDir = platform() === "win32" ? join(venvDir, "Scripts") : join(venvDir, "bin");
-	const env = { ...process.env, VIRTUAL_ENV: venvDir, PATH: `${binDir}${process.platform === "win32" ? ";" : ":"}${process.env.PATH || ""}` };
-	await run(command, args.passthrough.slice(1), { env });
-}
-
 async function doctor(args) {
 	const venvDir = resolveVenvDir(args);
 	console.log(`${C.bold}pi-scrapling doctor${C.reset}\n`);
@@ -573,15 +549,10 @@ Commands:
   update    upgrade pip packages, refresh browser, pi install (reconciles package)
   remove    pi remove the package; --purge-venv also deletes the venv
   doctor    check python, venv, scrapling, browser, Pi registration
-  path      print a stable path to a venv executable (default: python)
-  exec      run a command with the shared venv on PATH (use: exec -- python script.py)
 
 Flags:
   --source <path|git:|npm:>      Pi install source (default: this package's root)
   --venv-dir <path>               venv location (default: ~/.venvs/scrapling)
-  path [--] <python|pip|scrapling|scrapling-mcp>
-                                  print the executable path for automation
-  exec -- <command> [args...]     run with the shared venv activated (no shell required)
   --skip-browser                  install/update: skip \`scrapling install --force\`
   --purge-venv                    remove: also delete the venv after confirming
   --reconcile-user-mcp            install/update/remove: rewrite ~/.pi/agent/mcp.json,
@@ -623,12 +594,6 @@ async function main() {
 			break;
 		case "doctor":
 			await doctor(args);
-			break;
-		case "path":
-			await pathCommand(args);
-			break;
-		case "exec":
-			await execCommand(args);
 			break;
 		default:
 			console.error(err(`unknown command: ${args.command}`));
